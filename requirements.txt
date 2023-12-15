@@ -1,0 +1,10 @@
+art
+opencv-python
+numpy
+pyautogui
+pywin32
+pyserial
+dxcam
+comtypes==1.1.14
+requests
+colorama
