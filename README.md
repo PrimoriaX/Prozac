@@ -1,6 +1,6 @@
 <h1 align="center">Prozac 💊</h1>
 
-Prozac is a sophisticated, color-based aiming assistance bot tested in Valorant, created for **educational purposes**.
+Prozac is a sophisticated, color-based aiming assistance bot, created for **educational purposes**.
 
 ## 🛠 Setup Requirements
 
