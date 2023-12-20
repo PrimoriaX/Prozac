@@ -3,7 +3,7 @@ import numpy as np
 import pyautogui
 import win32api
 import serial
-import dxcam
+import mss
 import time
 
 from colorama import Fore, Style
@@ -20,8 +20,6 @@ AIM_OFFSET = 7
 LOWER_COLOR = [140, 120, 180]
 UPPER_COLOR = [160, 200, 255]
 #Settings
-
-camera = dxcam.create(output_idx=0, output_color="BGR")
 
 class Prozac:
     def __init__(self):
@@ -102,12 +100,11 @@ class Capture:
         y_center = monitor_size.height // 2
         left = x_center - X_FOV // 2
         top = y_center - Y_FOV // 2
-        right = left + X_FOV
-        bottom = top + Y_FOV
-        return left, top, right, bottom
+        width = X_FOV
+        height = Y_FOV
+        return {'left': left, 'top': top, 'width': width, 'height': height}
 
     def get_screen(self):
-        while True:
-            screenshot = camera.grab(region=self.region)
-            if screenshot is not None:
-                return np.array(screenshot)
+        with mss.mss() as sct:
+            screenshot = sct.grab(self.region)
+            return np.array(screenshot)
