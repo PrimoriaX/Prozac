@@ -1,4 +1,4 @@
-import os
+import os, sys
 import re
 import time
 import requests
@@ -84,6 +84,9 @@ def main():
     execute_cli_command(f"compile --fqbn arduino:avr:leonardo {SKETCH_FILE}")
     com_port = input(Fore.CYAN + "\nEnter your Arduino Leonardo COM port:")
     execute_cli_command(f"upload -p {com_port} --fqbn arduino:avr:leonardo {SKETCH_FILE}")
+    print(Fore.GREEN + "Sketch uploaded successfully! Exiting...")
+    time.sleep(3)
+    exit()
 
 if __name__ == '__main__':
     main()
