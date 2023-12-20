@@ -14,7 +14,6 @@ ARDUINO_CLI_FILENAME = "arduino-cli.exe"
 SKETCH_FILE = "mouse/mouse.ino"
 BOARDS_TXT_LOCATION = os.path.expandvars("%LOCALAPPDATA%/Arduino15/packages/arduino/hardware/avr/1.8.6/boards.txt")
 
-
 def download_and_extract_file(url, filename):
     print(Fore.GREEN + f"Downloading {filename}...")
     response = requests.get(url, stream=True)
@@ -24,7 +23,6 @@ def download_and_extract_file(url, filename):
     with zipfile.ZipFile(filename, 'r') as zip_ref:
         zip_ref.extractall("./")
     print(Fore.GREEN + f"{filename} downloaded successfully.")
-
 
 def update_boards_txt(vid, pid):
     pattern_to_replace = {
@@ -46,36 +44,18 @@ def update_boards_txt(vid, pid):
     with open(BOARDS_TXT_LOCATION, 'w') as file:
         file.writelines(data)
 
-
-def cleanup_files(files, folders):
-    print(Fore.YELLOW + "Cleaning up files...")
-
-    for file in files:
-        try:
-            os.remove(file)
-            print(Fore.GREEN + f"Deleted {file}")
-        except Exception as e:
-            print(Fore.RED + f"Failed to delete {file}. Error: {str(e)}")
-
-    for folder in folders:
-        try:
-            shutil.rmtree(folder)
-            print(Fore.GREEN + f"Deleted folder: {folder}")
-        except Exception as e:
-            print(Fore.RED + f"Failed to delete folder: {folder}. Error: {str(e)}")
-
-
 def list_mice_devices():
     wmi = win32com.client.GetObject("winmgmts:")
     devices = wmi.InstancesOf("Win32_PointingDevice")
     mice_devices = []
     for device in devices:
         search_result = re.search(r'VID_(\w+)&PID_(\w+)', device.PNPDeviceID)
-        if search_result:
+        if search_result:  # Check if search_result is not None
             mice_devices.append((device.Name, *search_result.groups()))
         else:
             print(Fore.RED + f"No VID & PID found for device: {device.Name}")
     return mice_devices
+
 
 def user_select_mouse(mice):
     print(Fore.CYAN + "\nDetecting mice devices...")
@@ -92,10 +72,8 @@ def user_select_mouse(mice):
         except ValueError:
             print(Fore.RED + "Please enter a valid number.")
 
-
 def execute_cli_command(command):
     os.system(f"{ARDUINO_CLI_FILENAME} {command} >NUL 2>&1")
-
 
 def main():
     download_and_extract_file(ARDUINO_CLI_ZIP_URL, "arduino-cli.zip")
@@ -106,8 +84,6 @@ def main():
     execute_cli_command(f"compile --fqbn arduino:avr:leonardo {SKETCH_FILE}")
     com_port = input(Fore.CYAN + "\nEnter your Arduino Leonardo COM port:")
     execute_cli_command(f"upload -p {com_port} --fqbn arduino:avr:leonardo {SKETCH_FILE}")
-    cleanup_files(["arduino-cli.exe", "arduino-cli.zip", "LICENSE.txt", "README.md"], ["mouse"])
-
 
 if __name__ == '__main__':
     main()
