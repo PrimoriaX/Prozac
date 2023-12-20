@@ -33,3 +33,6 @@ Join our Discord for assistance, queries, or real-time community support.
 [![Discord Banner](https://discordapp.com/api/guilds/1138653980784857159/widget.png?style=banner2)](https://discord.gg/bsNKqvxvE2)
 
 Your contributions and feature suggestions are welcome! If you like Prozac, give it a ⭐️ on GitHub to support our development efforts.
+
+## 🎓 Educational Purpose
+Our primary goal with Prozac is to provide a hands-on learning experience for students and enthusiasts in programming and hardware interfacing. This project is an excellent resource for understanding how software can interact with hardware (like Arduino boards) to perform real-time tasks. It's also a great starting point for those interested in exploring computer vision and color detection in Python.
