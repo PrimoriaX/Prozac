@@ -23,7 +23,7 @@ For an exclusive, enhanced version of Prozac, join our community on [Discord](di
 A detailed [video tutorial](https://youtu.be/pPDarnIaIG4) is available for a step-by-step guide.
 
 ### Personalizing Prozac
-1. **Configuration:** Adjust settings in [prozac.py](https://github.com/PrimoriaX/Prozac/blob/main/prozac.py#L11-L22). The file contains easy-to-modify configuration options.
+1. **Configuration:** Adjust settings in [prozac.py](https://github.com/PrimoriaX/Prozac/blob/main/prozac.py#L10-L29). The file contains easy-to-modify configuration options.
 2. **Experiment:** Find your optimal settings through trial and error. Remember, there’s no universally "best setting."
 3. **Modify Source Code:** To ensure ongoing effectiveness, modify the source code before use. Tips for modifications are shared in our [Discord server](discord.gg/bsNKqvxvE2).
 
