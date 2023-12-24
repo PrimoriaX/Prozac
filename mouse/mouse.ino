@@ -9,7 +9,9 @@ void loop() {
   if (Serial.available()) {
     String command = Serial.readStringUntil('\n');
     if (command == "CLICK") {
-      Mouse.click();
+      Mouse.press();
+      delay(60);
+      Mouse.release();
     } else {
       int commaIndex = command.indexOf(',');
       if (commaIndex != -1) {
