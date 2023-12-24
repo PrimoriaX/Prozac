@@ -5,21 +5,28 @@ import win32api
 import serial
 import mss
 import time
-
 from colorama import Fore, Style
 
 #Settings
-COM_PORT = "COM3"
+COMPORT_NUMBER = 3
 X_FOV = 100
 Y_FOV = 100
-AIM_KEY = 0x02
-TRIGGER_KEY = 0x12
 X_SPEED = 3
 Y_SPEED = 3
-AIM_OFFSET = 7
+AIMING_PRECISION = 7
+TRIGGERBOT_X_SIZE = 3
+TRIGGERBOT_Y_SIZE = 25
+AIM_KEYS = [0x02, 0x06]
+TRIGGER_KEYS = [0x12, 0x05]
+TOGGLE_MODE = False #TO DO
+
+#Advanced settings
 LOWER_COLOR = [140, 120, 180]
 UPPER_COLOR = [160, 200, 255]
-#Settings
+ENHANCE_CPU_USAGE = 0.005
+KERNEL_SIZE = (3, 3)
+DILATING = 5
+DEBUGGING = False #TO DO
 
 class Prozac:
     def __init__(self):
@@ -28,18 +35,21 @@ class Prozac:
     
     def listen(self):
         while True:
-            if win32api.GetAsyncKeyState(AIM_KEY) < 0:
-                self.run("aim")
-            if win32api.GetAsyncKeyState(TRIGGER_KEY) < 0:
-                self.run("click")
+            for aim_key in AIM_KEYS:
+                if win32api.GetAsyncKeyState(aim_key) < 0:
+                    self.run("aim")
 
-            time.sleep(0.008)
+            for trigger_key in TRIGGER_KEYS:
+                if win32api.GetAsyncKeyState(trigger_key) < 0:
+                    self.run("click")
+
+            time.sleep(ENHANCE_CPU_USAGE)
                 
     def run(self, task):
         hsv = cv2.cvtColor(self.capture.get_screen(), cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, np.array(LOWER_COLOR), np.array(UPPER_COLOR))
-        kernel = np.ones((3, 3), np.uint8)
-        dilated = cv2.dilate(mask, kernel, iterations=5)
+        kernel = np.ones(KERNEL_SIZE, np.uint8)
+        dilated = cv2.dilate(mask, kernel, iterations=DILATING)
         thresh = cv2.threshold(dilated, 60, 255, cv2.THRESH_BINARY)[1]
         contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
@@ -59,16 +69,18 @@ class Prozac:
 
             x, y, w, h = cv2.boundingRect(closest_contour)
             cX = x + w // 2
-            top_most_y = y + AIM_OFFSET
+            cY = y + h // 2
+            top_most_y = y + AIMING_PRECISION
 
             x_offset = cX - screen_center[0]
             y_offset = top_most_y - screen_center[1]
+            trigger_y_offset = cY - screen_center[1]
 
             if task == "aim":
                 self.mouse.move(x_offset * (X_SPEED * 0.1), y_offset * (Y_SPEED * 0.1))
 
             if task == "click":
-                if abs(x_offset) <= 3 and abs(y_offset) <= 7:
+                if abs(x_offset) <= TRIGGERBOT_X_SIZE and abs(trigger_y_offset) <= TRIGGERBOT_Y_SIZE:
                     self.mouse.click()
 
 class Mouse:
@@ -76,13 +88,13 @@ class Mouse:
         self.serial_port = serial.Serial()
         self.serial_port.baudrate = 115200
         self.serial_port.timeout = 0
-        self.serial_port.port = COM_PORT
+        self.serial_port.port = f"COM{COMPORT_NUMBER}"
         try:
             self.serial_port.open()
             print(f"{Fore.GREEN}\t\t\t\t\b\b{Fore.LIGHTBLACK_EX}[{Fore.GREEN}SUCCESS{Fore.LIGHTBLACK_EX}]{Style.RESET_ALL} Connected to Arduino Leonardo on '{COM_PORT}'!")
         except serial.SerialException:
             print(f"{Fore.RED}\t\t[ERROR]{Style.RESET_ALL} Failed to connect because the specified COM port was not found, exiting...")
-            time.sleep(10)
+            time.sleep(5)
 
     def move(self, x, y):
         self.serial_port.write(f'{x},{y}\n'.encode())
