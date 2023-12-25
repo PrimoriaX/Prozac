@@ -5,6 +5,7 @@ import requests
 import zipfile
 import shutil
 import win32com.client
+import subprocess
 from colorama import Fore, init
 
 init(autoreset=True)
@@ -15,14 +16,13 @@ SKETCH_FILE = "mouse/mouse.ino"
 BOARDS_TXT_LOCATION = os.path.expandvars("%LOCALAPPDATA%/Arduino15/packages/arduino/hardware/avr/1.8.6/boards.txt")
 
 def download_and_extract_file(url, filename):
-    print(Fore.GREEN + f"Downloading {filename}...")
+    print(f"\n{Fore.LIGHTBLACK_EX}[{Fore.WHITE}x{Fore.LIGHTBLACK_EX}]{Fore.GREEN} Downloading Required Files...")
     response = requests.get(url, stream=True)
     with open(filename, "wb") as fd:
         for chunk in response.iter_content(chunk_size=128):
             fd.write(chunk)
     with zipfile.ZipFile(filename, 'r') as zip_ref:
         zip_ref.extractall("./")
-    print(Fore.GREEN + f"{filename} downloaded successfully.")
 
 def update_boards_txt(vid, pid):
     pattern_to_replace = {
@@ -50,18 +50,17 @@ def list_mice_devices():
     mice_devices = []
     for device in devices:
         search_result = re.search(r'VID_(\w+)&PID_(\w+)', device.PNPDeviceID)
-        if search_result:  # Check if search_result is not None
+        if search_result:
             mice_devices.append((device.Name, *search_result.groups()))
         else:
             print(Fore.RED + f"No VID & PID found for device: {device.Name}")
     return mice_devices
 
-
 def user_select_mouse(mice):
-    print(Fore.CYAN + "\nDetecting mice devices...")
+    print(f"\n{Fore.LIGHTBLACK_EX}[{Fore.WHITE}x{Fore.LIGHTBLACK_EX}]{Fore.GREEN} Detecting Mouse Devices...")
 
     for idx, (name, vid, pid) in enumerate(mice, 1):
-        print(f"{Fore.CYAN}{idx} →{Fore.RESET} {name}\tVID: {vid or 'Not found'}, PID: {pid or 'Not found'}")
+        print(f"{Fore.GREEN}{idx} →{Fore.RESET} {name}\tVID: {vid or 'Not found'}, PID: {pid or 'Not found'}")
 
     while True:
         try:
@@ -73,7 +72,9 @@ def user_select_mouse(mice):
             print(Fore.RED + "Please enter a valid number.")
 
 def execute_cli_command(command):
-    os.system(f"{ARDUINO_CLI_FILENAME} {command} >NUL 2>&1")
+    process = subprocess.Popen(f"{ARDUINO_CLI_FILENAME} {command}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    stdout, stderr = process.communicate()
+    return process.returncode, stdout.decode(), stderr.decode()
 
 def main():
     download_and_extract_file(ARDUINO_CLI_ZIP_URL, "arduino-cli.zip")
@@ -82,9 +83,15 @@ def main():
     vid, pid = user_select_mouse(list_mice_devices())
     update_boards_txt("0x" + vid, "0x" + pid)
     execute_cli_command(f"compile --fqbn arduino:avr:leonardo {SKETCH_FILE}")
-    com_port = input(Fore.CYAN + "\nEnter your Arduino Leonardo COM port:")
-    execute_cli_command(f"upload -p {com_port} --fqbn arduino:avr:leonardo {SKETCH_FILE}")
-    print(Fore.GREEN + "Sketch uploaded successfully! Exiting...")
+    
+    com_port = input(f"\n{Fore.LIGHTBLACK_EX}[{Fore.WHITE}x{Fore.LIGHTBLACK_EX}]{Fore.GREEN} Enter your Arduino com port number (e.g. 3){Fore.RESET}: COM")
+    ret_code, _, stderr = execute_cli_command(f"upload -p COM{com_port} --fqbn arduino:avr:leonardo {SKETCH_FILE}")
+    
+    if ret_code == 0:
+        print(f"\n{Fore.LIGHTBLACK_EX}[{Fore.GREEN}Success{Fore.LIGHTBLACK_EX}]{Fore.WHITE} Setup Completed!")
+    else:
+        print(f"\n{Fore.LIGHTBLACK_EX}[{Fore.RED}Error{Fore.LIGHTBLACK_EX}]{Fore.WHITE} Setup Failed. Please double check your com port number.")
+    
     time.sleep(3)
     exit()
 
